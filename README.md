@@ -1,5 +1,6 @@
 # GLG - NLP Capstone - Named Entity Recognition (NER) + Hierarchical Topic Modeling
 ==============================
+
 Repo for FourthBrain GLG Project
 Extracting Topic and Entity data useful in the Technology and Healthcare domains from unstructured text.
 
