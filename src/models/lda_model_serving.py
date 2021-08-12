@@ -1,6 +1,7 @@
 # Load Utilities for Model Prediction
 import pickle
 import os
+import numpy as np
 
 # Load LDA Library
 from gensim.models import Word2Vec
@@ -8,49 +9,50 @@ import gensim.corpora as corpora
 import gensim
 
 # From SRC | Load Helper Functions
-from src.text_cleaning import func_lemmatize, clean_query
-
+# from src.text_cleaning import func_lemmatize, clean_query
 
 
 # Declare model path
-BASE_PATH = os.path.getcwd()
-MODEL_PATH = BASE_PATH + '/nlp-glg-mas/models/'
+BASE_PATH = os.getcwd()
+MODEL_PATH = BASE_PATH + '/models/lda_250k/'
+EMBEDDING_PATH = BASE_PATH + '/models/lda_embedding/'
 
+print(BASE_PATH)
 print(MODEL_PATH)
+print(EMBEDDING_PATH)
 
 
 
 
 # Load the LDA Model
-def load_model(model_name, path = MODEL_PATH):
+def load_model(model_name = '250k_ldamodel_185', path = MODEL_PATH):
 	
 	# Load the serialized model
 	# lda_model = pickle.load(open(path + 'lda_model.pkl', 'rb'))
-	model_name = '250k_ldamodel_185'
+	# model_name = '250k_ldamodel_185'
 
-	lda_model = gensim.models.ldamodel.LdaModel.load(MODEL_PATH + model_name)
+	lda_model = gensim.models.ldamodel.LdaModel.load(path + model_name)
 
 	return lda_model
 
 
 # Load the ID2WORD Embedding
-def load_id2word_embedding(model_path = MODEL_PATH):
+def load_id2word_embedding(embedding_name='id2word.pkl', embedding_path = EMBEDDING_PATH):
 
-	filename = 'id2word.pkl'
-	file = open(model_path + filename, 'rb')
+	file = open(embedding_path + embedding_name, 'rb')
 	id2word = pickle.load(file)
 
 	return id2word
 
 
 # Predict Topics
-def topic_predict(query, embedding, lda_model):  
+def topic_predict(tokenized_query, embedding, lda_model):  
 
     # Clean up the text into a corpus
     # tokenized_input = clean_query(query)
     
     # Mapped embedding from Cleaned corpus text in list form
-    corpus = id2word.doc2bow(tokenized_input)
+    corpus = embedding.doc2bow(tokenized_query)
     
     np.random.seed(4)
     
@@ -61,6 +63,12 @@ def topic_predict(query, embedding, lda_model):
     # Post-Process Output for Display
     ordered = sorted(output,key=lambda x:x[1],reverse=True)
     
+
+    # DEBUGGING
+    print(len(ordered), ordered)
+
+
+    # Issue Here
     primary_topic = ordered[0][0]
     
     threshold = 0.5
@@ -72,20 +80,29 @@ def topic_predict(query, embedding, lda_model):
 
 
 # Print Topics
-def print_topics(topics, topics_dict):
-    print(f'primary topic: {topics_dict[topics[0]]}')
+# def return_topics(topics, topics_dict):
+#     print(f'primary topic: {topics_dict[topics[0]]}')
 
-    if secondary_topics:
-        print('-' * 10, '\n', 'other topics:')
-        for topic in topics[1]:
-            print(topics_dict[topic])
+#     if secondary_topics:
+#         print('-' * 10, '\n', 'other topics:')
+#         for topic in topics[1]:
+#             print(topics_dict[topic])
 
-    return pass
+
+def lookup_secondary_topics(secondary_topic_codes, topic_dict):
+	if secondary_topic_codes:
+				
+		# Capture Lookup from topic_dict in a list
+		secondary_topics = [topic_dict[topic_code] for topic_code in secondary_topic_codes]
+	else:
+		pass
+
+	return secondary_topics
 
 
 def load_topics_dict():
 	topics_dict = {0:'ind',1:'sweden money-laundering',2:'libya politics',3:'gossip/celebrity life',4:'international business/economics',
-              5:'mideast oil/business',6:'us politics',7:'international energy/renewables',8:'vietnam',9:'activism/protests',
+               5:'mideast oil/business',6:'us politics',7:'international energy/renewables',8:'vietnam',9:'activism/protests',
                10:'nutrition/health science',11:'international diplomacy/politics',12:'washington politics',13:'celebrity life',
                14:'ind',15:'immunology/bloodborne diseases',16:'german-language business',17:'islamic geopolitics',
                18:'international oil/politics',19:'baseball/football',20:'art and museums',21:'international trade',
@@ -124,7 +141,6 @@ def load_topics_dict():
                170:'UK/EU economics, politics',171:'healthcare, insurance & retirement benefits',172:'cuba',173:'snackfoods, desserts & beverages',
                174:'misc lists and trivia',175:'desus & mero',176:'automakers & ride-sharing',177:'icebergs & glaciers',
                178:'ice hockey',179:'global big business',180:'washington politics',181:'China/HK business',182:'LGBTQ matters',
-               183:'royalty and monarchy',
-               184:'retail'}
-
-    return topics_dict
+               183:'royalty and monarchy', 184:'retail'}
+	
+	return topics_dict

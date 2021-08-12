@@ -12,7 +12,7 @@ from nltk.corpus import stopwords
 
 # from datetime import datetime, timedelta
 # import matplotlib.pyplot as plt
-# import time
+import time
 import pickle
 
 
@@ -29,7 +29,7 @@ def setup_nltk_downloaded_components():
 	return 'Successfully installed nltk supplemental components.'
 
 # Lemmatize Text
-def func_lemmatize(words):
+def func_lemmatize(words, wnl):
     lemmatized = []
     
     for word, tag in pos_tag(words):
@@ -44,12 +44,12 @@ def func_lemmatize(words):
 
 
 # Return Cleaned Words
-def clean_query(query):
+def clean_query(query, pattern, stop, wnl):
 
     # Call to regex pattern
     tokenized = regexp_tokenize(query, pattern)
     indiv_words = [word for word in tokenized if word.isalpha()]
-    lemmatized = func_lemmatize(indiv_words)
+    lemmatized = func_lemmatize(indiv_words, wnl)
     
     # Call to 'stop' for stopword removal
     words = [word.lower() for word in lemmatized if word not in stop]
