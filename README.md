@@ -2,6 +2,8 @@
 **Named Entity Recognition (NER) + Hierarchical Topic Modeling**
 ---
 
+https://user-images.githubusercontent.com/18731036/129255631-8c37c4ae-794d-4968-a667-00f9ff9c81b3.mov
+
 ### Repo for FourthBrain GLG Project
 Extracting Topic and Entity data useful in the Technology and Healthcare domains from unstructured text.
 
