@@ -1,7 +1,8 @@
-# GLG - NLP Capstone - Named Entity Recognition (NER) + Hierarchical Topic Modeling
-==============================
+# GLG - NLP Capstone 
+**Named Entity Recognition (NER) + Hierarchical Topic Modeling**
+---
 
-Repo for FourthBrain GLG Project
+### Repo for FourthBrain GLG Project
 Extracting Topic and Entity data useful in the Technology and Healthcare domains from unstructured text.
 
 GLG is a management consultancy and self-styled World’s Insight Network. One of GLG’s main business roles is to connect clients with experts from its network of over 900,000 subject matter experts.  It identifies Technology and Healthcare as particular areas of focus for its business delivery.
