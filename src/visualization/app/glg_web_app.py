@@ -25,6 +25,7 @@ import src.models.lda_model_serving as model_endpoint
 # Setup Objects for NLTK to Parse Below
 # wnl, stop, pattern = text_cleaning.session_nltk_objects_init()
 wnl = WordNetLemmatizer()
+wnl.lemmatize('cats')
 stop = set(stopwords.words('english'))
 pattern = r'(\w+)'
 
