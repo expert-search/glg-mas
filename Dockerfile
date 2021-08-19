@@ -6,7 +6,17 @@ COPY . /app
 
 WORKDIR /app
 
+#Install Package Dependencies
 RUN pip install -r requirements.txt
+
+# Uncompress LDA Model
+RUN unzip ./models/lda_250k/250k_ldamodel_185_files.zip
+
+RUN mv 250k* ./models/lda_250k/
+
+
+# Install NLTK dependencies
+RUN python ./src/models/init_nltk.py
 
 EXPOSE 8501
 
