@@ -129,6 +129,10 @@ if analysis_type == 'Topics':
 
 
 
+
+
+
+
 elif analysis_type == 'Entities':
 
 	# NER Section - Load Named Entities Here
@@ -145,6 +149,13 @@ elif analysis_type == 'Entities':
 
 
 			st.write('2. Output List of Named Entities here.')
+
+			### --------------------------ADD TEMP NER SECTION HERE-----------------------------#
+
+			html_string = '<div class="entities" style="line-height: 2.5; direction: ltr">In \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    March\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">tim</span>\n</mark>\n the joint study reported that it was extremely unlikely that the virus had been released in a laboratory accident . \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Dr Ben Embarek\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">per</span>\n</mark>\n revealed that this conclusion did not come from a balanced assessment of all the relevant evidence but from a steadfast refusal by the \n<mark class="entity" style="background: #feca74; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Chinese\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">gpe</span>\n</mark>\n members of the joint study to support anything stronger . </div>'
+
+
+			st.markdown(html_string, unsafe_allow_html=True)
 
 
 
