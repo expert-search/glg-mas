@@ -37,16 +37,21 @@ nlp_corpus = spacy.load('en_core_web_sm')
 
 # Declare model path
 BASE_PATH = os.getcwd()
-LDA_MODEL_PATH = BASE_PATH + '/models/lda_250k/'
-EMBEDDING_PATH = BASE_PATH + '/models/lda_embedding/'
-NER_MODEL_PATH = BASE_PATH + '/models/ner_crf/'
+
+# Set Default Version Number
+version_number = str(0.1)
+LDA_MODEL_PATH = BASE_PATH + f'/models/LDA/{version_number}/model/'
+EMBEDDING_PATH = BASE_PATH + f'/models/LDA/{version_number}/embedding/'
+NER_MODEL_PATH = BASE_PATH + f'/models/NER/{version_number}/'
 
 
 # ------------------ Load Model in Background ----------------------- #
-topic_dict = lda_endpoint.load_topics_dict()
-id2word = lda_endpoint.load_id2word_embedding(embedding_name = 'id2word.pkl', embedding_path = EMBEDDING_PATH)
-lda_model = lda_endpoint.load_model(model_name = '250k_ldamodel_185', path = LDA_MODEL_PATH)
-ner_model = ner_endpoint.load_model(model_name = 'ner_crfsuite', path = NER_MODEL_PATH)
+
+# Default Model is v0.1 - User Can Choose Later
+topic_dict = lda_endpoint.load_topics_dict(version_number = version_number)
+lda_embedding = lda_endpoint.load_id2word_embedding(version_number = version_number, embedding_path = EMBEDDING_PATH)
+lda_model = lda_endpoint.load_model(version_number = version_number, path = LDA_MODEL_PATH)
+ner_model = ner_endpoint.load_model(version_number = version_number, path = NER_MODEL_PATH)
 
 # ------------------- Begin Bage Rendering -------------------------- #
 
@@ -102,7 +107,7 @@ if analysis_type == 'Topics':
 			if len(cleaned_text) > 0:
 
 				topic_codes_array = lda_endpoint.topic_predict(cleaned_text, 
-																embedding = id2word, 
+																embedding = lda_embedding, 
 																lda_model = lda_model)
 
 				# DEBUG to Console
@@ -165,7 +170,7 @@ elif analysis_type == 'Entities':
 				st.markdown(html_string, unsafe_allow_html=True)
 			else:
 				st.write('Awaiting input text entry.')
-				
+
 			# Test Case 2: Healthcare
 			# html_string = '<div class="entities" style="line-height: 2.5; direction: ltr">In \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Palermo\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n , \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Sicily\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n s capital , 80 percent of the hospitalized \n<mark class="entity" style="background: #7aecec; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Covid\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">org</span>\n</mark>\n patients are unvaccinated , and a vast majority of those in the I . \n<mark class="entity" style="background: #7aecec; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    C\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">org</span>\n</mark>\n . \n<mark class="entity" style="background: #7aecec; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    U\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">org</span>\n</mark>\n . have not received a vaccine , said \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Dr\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n . \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Renato Costa\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">per</span>\n</mark>\n , the city s Covid emergency commissioner . Similar rates are observed throughout the region . If we had a higher vaccination rate , said \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Dr\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n . \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Costa\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n , our hospitals would be emptier . Local doctors said the drop in vaccination rates during the month \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    of August\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">tim</span>\n</mark>\n was related to the \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    summer\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">tim</span>\n</mark>\n holidays , a time when it is more difficult to distribute shots to the region , which has among \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Italy\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n s lowest income and education levels . </div>'
 			

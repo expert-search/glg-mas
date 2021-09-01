@@ -17,7 +17,10 @@ from src.features import text_cleaning
 
 # Declare model path
 BASE_PATH = os.getcwd()
-NER_MODEL_PATH = BASE_PATH + '/models/ner_crf/'
+
+# Default Model is v0.1 
+version_number = 0.1
+NER_MODEL_PATH = BASE_PATH + f'/models/NER/{version_number}/'
 
 print(BASE_PATH)
 print(NER_MODEL_PATH)
@@ -25,10 +28,12 @@ print(NER_MODEL_PATH)
 
 
 # Load the NER Model
-def load_model(model_name = 'ner_crfsuite', path = NER_MODEL_PATH):
+def load_model(version_number = 0.1, path = NER_MODEL_PATH):
 	
-	if model_name == 'ner_crfsuite':
-		ner_model = pickle.load(open(path + '0.1-maf-crf_ner_model.sav', 'rb'))
+	model_name = 'ner_model_v' + version_number + '.sav'
+
+	with open(path + model_name, 'rb') as file:
+		ner_model = pickle.load(file)
 	
 	return ner_model
 
