@@ -37,6 +37,12 @@ def load_model(version_number = 0.1, path = NER_MODEL_PATH):
 	
 	return ner_model
 
+def load_ner_per_topic_dict(version_number = 0.1, path = NER_MODEL_PATH):
+
+	with open(path + f'topic_to_top5_ner_entities_v{version_number}.pkl', 'rb') as file:
+		ner_topic_dict = pickle.load(file)
+
+	return ner_topic_dict
 
 # Predict NER Tags
 def predict_ner_tags(input_text, nlp_corpus, ner_model):
