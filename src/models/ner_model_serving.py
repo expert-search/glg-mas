@@ -19,32 +19,36 @@ from src.features import text_cleaning
 BASE_PATH = os.getcwd()
 
 # Default Model is v0.1 
-version_number = 0.1
-NER_MODEL_PATH = BASE_PATH + f'/models/NER/{version_number}/'
+# version_number = 0.1
+# NER_MODEL_PATH = BASE_PATH + f'/models/NER/{version_number}/'
 
-print(BASE_PATH)
-print(NER_MODEL_PATH)
+# print(BASE_PATH)
+# print(NER_MODEL_PATH)
 
 
 
 # Load the NER Model
-def load_model(version_number = 0.1, path = NER_MODEL_PATH):
+def load_model(version_number, path):
 	
-	model_name = 'ner_model_v' + version_number + '.sav'
+	model_name = f'ner_model_v{version_number}.sav'
 
 	with open(path + model_name, 'rb') as file:
 		ner_model = pickle.load(file)
 	
 	return ner_model
 
+def load_ner_per_topic_dict(version_number, path):
+
+	with open(path + f'topic_to_top5_ner_entities_v{version_number}.pkl', 'rb') as file:
+		ner_topic_dict = pickle.load(file)
+
+	return ner_topic_dict
 
 # Predict NER Tags
 def predict_ner_tags(input_text, nlp_corpus, ner_model):
 
 	# Prepare raw input text into SentenceGetter parsable DataFrame
 	x = text_cleaning.prep_query_for_NER(input_text)
-
-	print(type(x))
 
 	# Create an instance of the SentenceGetter class from the raw input text
 	getter_query = text_cleaning.NERSentenceGetter(x)
@@ -73,7 +77,20 @@ def predict_ner_tags(input_text, nlp_corpus, ner_model):
 
 	# Render the HTML string as output for the input text
 	html_string = displacy.render(doc, style = "ent", jupyter = False)
+	html_string = clean_displacy_html(html_string)
+
+	# .replace(" ,"    ,   ",").replace("n ' t","n't").replace(" ."    ,   ".").replace("you ' re","you're")
 
 	return html_string
+
+def clean_displacy_html(html_string):
+
+	pairs = [(" ,"   ,  ","),("dn t ","dn't "),(" ."   ,  "."),("an t ","an't "),("ou re ","ou're "),("I m ","I'm "),("hey re ","hey're "),("we re ","we're "),("We re","We're"),(" ll ","'ll "),("e s ","e's ")]
+
+	for pair in pairs:
+		html_string = html_string.replace(pair[0],pair[1])
+
+	return html_string
+
 
 
