@@ -2,4 +2,8 @@
 models/lda_250k/*
 
 # Add back the zip file
-!models/lda_250k/250k_ldamodel_185_files.zip
+#!models/lda_250k/250k_ldamodel_185_files.zip
+
+# Ignore ./models/LDA to allow for easy decompression of LDA.zip
+models/LDA/*
+models/LDA

@@ -39,7 +39,7 @@ nlp_corpus = spacy.load('en_core_web_sm')
 BASE_PATH = os.getcwd()
 
 # Set Default Version Number
-lda_version_number = 0.3
+lda_version_number = 0.31
 ner_version_number = 0.1
 
 # Set Up Paths for Loading Model Endpoints
@@ -65,16 +65,16 @@ ner_from_topics = ner_endpoint.load_ner_per_topic_dict(version_number = ner_vers
 
 # ------------------- Begin Bage Rendering -------------------------- #
 # Set Page Layout Configuration (Wide or Narrow)
-st.set_page_config(layout = "centered")
+st.set_page_config(layout = "wide")
 
 # Set Title for Page 
 st.title('GLG Request Routing Dashboard')
 st.write('---')
 
 # Setup Sidebar
-st.sidebar.title('Tool Selector')
-st.sidebar.write('---')
-analysis_type = st.sidebar.selectbox('Select Tool: ', ['Topics + Entities Dashboard', 'Topic Clustering through Time'])
+# st.sidebar.title('Tool Selector')
+# st.sidebar.write('---')
+# analysis_type = st.sidebar.selectbox('Select Tool: ', ['Topics + Entities Dashboard', 'Topic Clustering through Time'])
 
 
 
@@ -84,136 +84,127 @@ st.header('Customer Request')
 text_to_parse = st.text_area('Submit a query ~ 1-2 sentences in length. Please do not submit any personally identifiable data.')
 
 # Topic Modeling Analysis
-if analysis_type == 'Topics + Entities Dashboard':
-		
-	# if st.button('Process Text'):
-	# 	st.write('Now Processing...')
+# if analysis_type == 'Topics + Entities Dashboard':
+	
+# if st.button('Process Text'):
+# 	st.write('Now Processing...')
 
-	# Double check if this has captured anything and will delay page load below?
-	# if text_to_parse:
-	# 	st.write(text_to_parse)
+# Double check if this has captured anything and will delay page load below?
+# if text_to_parse:
+# 	st.write(text_to_parse)
+			
+# Clean the lemmatized text for dispatch to model
+cleaned_text = text_cleaning.clean_query(text_to_parse, pattern, stop, wnl)
+
+# Print to check
+# st.write(cleaned_text)
+
+# Set up Columns to Print Output
+# col_left, col_right = st.columns(2)
+
+
+# Topic Modeling Section
+# with col_left:
+with st.container():
+	
+	# Fetch Model Predictions via Model API Call
+	with st.spinner('Fetching Topics.'):
+
+		# Delay to simulate model API Call
+		# time.sleep(3)
+
+		# Predict Topics - only if text has been entered
+		if len(cleaned_text) > 0:
+
+			# Call API for Topic Model
+			primary_topic_id, secondary_topics_id_list = lda_endpoint.topic_predict(cleaned_text, 
+															embedding = lda_embedding, 
+															lda_model = lda_model,
+															topics_dict = topic_dict)
+
+			# Create an output text box with a list of topics returned from the model
+			# Ensure topic_array contains actual tokenized text - (length >= 1)
+			if primary_topic_id:
 				
-	# Clean the lemmatized text for dispatch to model
-	cleaned_text = text_cleaning.clean_query(text_to_parse, pattern, stop, wnl)
+				clean_text_primary_topic = ' '.join([word for word in topic_dict[primary_topic_id].split()])
+				st.header(f'Primary Topic Found: **{clean_text_primary_topic}**')
 
-	# Print to check
-	# st.write(cleaned_text)
-
-	# Set up Columns to Print Output
-	# col_left, col_right = st.columns(2)
+			# Parse secondary topics if they exist
+			if len(secondary_topics_id_list) > 0:
 
 
-	# Topic Modeling Section
-	# with col_left:
-	with st.container():
-		
-		# Fetch Model Predictions via Model API Call
-		with st.spinner('Fetching Topics.'):
+				with st.expander('Secondary Topics:'):
 
-			# Delay to simulate model API Call
-			# time.sleep(3)
+					# Iterate through the topic ID's in the secondary topics list
+					for topic_id in secondary_topics_id_list:
 
-			# Predict Topics - only if text has been entered
-			if len(cleaned_text) > 0:
-
-				# topic_codes_array = lda_endpoint.topic_predict(cleaned_text, 
-				# 												embedding = lda_embedding, 
-				# 												lda_model = lda_model,
-				# 												topics_dict = topic_dict)
-
-				# DEBUG to Console
-				# print('\n')
-				# print(topic_codes_array)
-				# print('\n')
-
-				# Returns a string
-				# st.write(topic_codes_array)
-
-
-				primary_topic_id, secondary_topics_id_list = lda_endpoint.topic_predict(cleaned_text, 
-																embedding = lda_embedding, 
-																lda_model = lda_model,
-																topics_dict = topic_dict)
-
-				# Create an output text box with a list of topics returned from the model
-				# Ensure topic_array contains actual tokenized text - (length >= 1)
-				if primary_topic_id:
-					
-					clean_text_primary_topic = ' '.join([word.title() for word in topic_dict[primary_topic_id].split()])
-					st.header(f'Primary Topic Found: **{clean_text_primary_topic}**')
-
-
-				if len(secondary_topics_id_list) > 0:
-
-					# secondary_topics = lda_endpoint.lookup_secondary_topics(secondary_topic_codes, topic_dict)
-				
-					with st.expander('Secondary Topics:'):
-
-						for topic_id in secondary_topics_id_list:
-
-							clean_text_secondary_topic = ' '.join([word.title() for word in topic_dict[topic_id].split()])
+						# Clean it up for presentation
+						clean_text_secondary_topic = ' '.join([word for word in topic_dict[topic_id].split() if len(word) >= 1])
+						
+						# Only return the non-blank topics
+						if len(clean_text_secondary_topic) >= 1:
 							st.write(f'**{clean_text_secondary_topic}**')
 
-		# NER Section - Load Named Entities Here
-	# with col_right:
+# NER Section - Load Named Entities
+with st.container():
 	
-	with st.container():
-		
-		# Fetch Model Predictions via Model API Call
-		with st.spinner('Fetching Entities.'):
+	# Fetch Model Predictions via Model API Call
+	with st.spinner('Fetching Entities.'):
 
-			### --------------------------ADD TEMP NER SECTION HERE-----------------------------#
+		### --------------------------ADD TEMP NER SECTION HERE-----------------------------#
 
-			# html_string = '<div class="entities" style="line-height: 2.5; direction: ltr">In \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    March\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">tim</span>\n</mark>\n the joint study reported that it was extremely unlikely that the virus had been released in a laboratory accident . \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Dr Ben Embarek\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">per</span>\n</mark>\n revealed that this conclusion did not come from a balanced assessment of all the relevant evidence but from a steadfast refusal by the \n<mark class="entity" style="background: #feca74; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Chinese\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">gpe</span>\n</mark>\n members of the joint study to support anything stronger . </div>'
+		# html_string = '<div class="entities" style="line-height: 2.5; direction: ltr">In \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    March\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">tim</span>\n</mark>\n the joint study reported that it was extremely unlikely that the virus had been released in a laboratory accident . \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Dr Ben Embarek\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">per</span>\n</mark>\n revealed that this conclusion did not come from a balanced assessment of all the relevant evidence but from a steadfast refusal by the \n<mark class="entity" style="background: #feca74; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Chinese\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">gpe</span>\n</mark>\n members of the joint study to support anything stronger . </div>'
 
-			# Test Case 1: Technology
-			# html_string = '<div class="entities" style="line-height: 2.5; direction: ltr">SoftBank needs a Plan B . \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    One\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">tim</span>\n</mark>\n year on , prospects for its planned 54bn sale of \n<mark class="entity" style="background: #7aecec; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    UK\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">org</span>\n</mark>\n chip designer \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Arm\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">per</span>\n</mark>\n to \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Nvidia\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n are souring . Antitrust watchdogs are circling . The \n<mark class="entity" style="background: #7aecec; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    European Commission\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">org</span>\n</mark>\n is set to launch a formal competition probe while the \n<mark class="entity" style="background: #7aecec; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    UK s Competition and Markets Authority\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">org</span>\n</mark>\n has dismissed \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Nvidia\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n s efforts as insufficient . \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    China\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n , where \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Arm\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n has its own problems with a rogue joint venture partner , is likely to join the chorus . The deal is far from dead . A handful of \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Arm\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n clients have rallied round \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Nvidia\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n . \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    South Korea\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n s \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Samsung\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n provides precedent for vertical integration without compromising access to third party clients . Contractual remedies may save the day . </div>'
-			if text_to_parse:
-				# Predict NER Tags and return the HTML String to render
-				html_string = ner_endpoint.predict_ner_tags(text_to_parse, nlp_corpus, ner_model)
-
-				# Render Heading
-				st.write('')
-				st.header('Named Entities Found:')
-				
-				# Render tagged sentence with NER tags to UI
-				st.markdown(html_string, unsafe_allow_html=True)
-
-			else:
-				pass
-				# st.write('Awaiting input text entry.')
-
-
-		# Load Most Common NER Entities for the Primary Topic
-		# Render a break
-
-		# Header
+		# Test Case 1: Technology
+		# html_string = '<div class="entities" style="line-height: 2.5; direction: ltr">SoftBank needs a Plan B . \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    One\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">tim</span>\n</mark>\n year on , prospects for its planned 54bn sale of \n<mark class="entity" style="background: #7aecec; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    UK\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">org</span>\n</mark>\n chip designer \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Arm\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">per</span>\n</mark>\n to \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Nvidia\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n are souring . Antitrust watchdogs are circling . The \n<mark class="entity" style="background: #7aecec; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    European Commission\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">org</span>\n</mark>\n is set to launch a formal competition probe while the \n<mark class="entity" style="background: #7aecec; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    UK s Competition and Markets Authority\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">org</span>\n</mark>\n has dismissed \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Nvidia\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n s efforts as insufficient . \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    China\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n , where \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Arm\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n has its own problems with a rogue joint venture partner , is likely to join the chorus . The deal is far from dead . A handful of \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Arm\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n clients have rallied round \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Nvidia\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n . \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    South Korea\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n s \n<mark class="entity" style="background: #ddd; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">\n    Samsung\n    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">geo</span>\n</mark>\n provides precedent for vertical integration without compromising access to third party clients . Contractual remedies may save the day . </div>'
 		if text_to_parse:
+			# Predict NER Tags and return the HTML String to render
+			html_string = ner_endpoint.predict_ner_tags(text_to_parse, nlp_corpus, ner_model)
+
+			# Render Heading
 			st.write('')
-			st.header(f'Top 5 Most Common Entries found for: **{clean_text_primary_topic}**')
+			st.header('Named Entities Found:')
+			
+			# Render tagged sentence with NER tags to UI
+			st.markdown(html_string, unsafe_allow_html=True)
 
-			# Extract the non-blank entity groups only
-			entity_keys_to_print = [key for key, value in ner_from_topics[primary_topic_id].items() if len(value) > 0]
-
-			# Extract the NER entities for that topic with non-zero entries
-			n_columns_for_ner = len(entity_keys_to_print)
-
-			# Create the Streamlit Column Objects
-			cols = st.columns(n_columns_for_ner)
-		
-			column_headers_by_entity = {'org':'Organizations', 
-			'gpe':'Geopolitical Entities', 
-			'geo':'Geographic Entities', 
-			'per':'People + Contacts', 
-			'tim':'Moments / Eras / Periods', 
-			'art':'Art'}
+		else:
+			pass
+			# st.write('Awaiting input text entry.')
 
 
-			# Arrange to have People + Contacts the first column on the left
+	# Load Most Common NER Entities for the Primary Topic
+	# Render a break
 
-			# Create the Column Subheading for each Tag
-			for tag, col in zip(entity_keys_to_print, cols):
+	# Header
+	if text_to_parse:
+		st.write('')
+		st.header(f'Top 5 Most Common Entries found for: **{clean_text_primary_topic}**')
 
+		# Extract the non-blank entity groups only
+		entity_keys_to_print = [key for key, value in ner_from_topics[primary_topic_id].items() if len(value) > 0]
+
+		# Extract the NER entities for that topic with non-zero entries
+		n_columns_for_ner = len(entity_keys_to_print)
+
+		# Create the Streamlit Column Objects
+		cols = st.columns(n_columns_for_ner)
+	
+		column_headers_by_entity = {'org':'Organizations', 
+		'gpe':'Geopolitical Entities', 
+		'geo':'Geographic Entities', 
+		'per':'People + Contacts', 
+		'tim':'Moments / Eras / Periods', 
+		'art':'Art'}
+
+
+		# Create the Column Subheading for each Tag
+		for tag, col in zip(entity_keys_to_print, cols):
+
+			# Art has poor results - skip for now
+			if tag == 'art':
+				pass
+			else:
 				# Build the Column
 				with col:
 					st.subheader(column_headers_by_entity[tag])
@@ -222,8 +213,11 @@ if analysis_type == 'Topics + Entities Dashboard':
 					# Extract the tags needed
 					top5_list = ner_from_topics[primary_topic_id][tag]
 
+					# Filter out any blank entries
+					top5_list_cleaned = [pair for pair in top5_list if len(pair[0]) >= 1]
+
 					# Build the markdown list for the tags
-					for entity, count in top5_list:
+					for entity, count in top5_list_cleaned:
 						st.markdown(f'- **{entity}** - {count}')
 
 
@@ -274,15 +268,15 @@ if analysis_type == 'Topics + Entities Dashboard':
 
 
 
-elif analysis_type == 'Topic Clustering through Time':
-	# Dendrogram Date Range Selection Section
-	st.header('Hierarchical Dendrogram - Version 2')
-	st.write('---')
-	st.write('Starting year must come before ending year')
-	start_year = st.slider('Select a Starting Year', min_value=2004, max_value=2021)
-	end_year = st.slider('Select an Ending Year', min_value=2004, max_value=2021)
+# elif analysis_type == 'Topic Clustering through Time':
+# 	# Dendrogram Date Range Selection Section
+# 	st.header('Hierarchical Dendrogram - Version 2')
+# 	st.write('---')
+# 	st.write('Starting year must come before ending year')
+# 	start_year = st.slider('Select a Starting Year', min_value=2004, max_value=2021)
+# 	end_year = st.slider('Select an Ending Year', min_value=2004, max_value=2021)
 
-	st.write(f'Analyzing topic clusters for the period from {start_year} to {end_year}')
+# 	st.write(f'Analyzing topic clusters for the period from {start_year} to {end_year}')
 
 
 # ----------------- Footer -------------------- #
