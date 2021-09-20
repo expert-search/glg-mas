@@ -9,11 +9,11 @@ WORKDIR /app
 #Install Package Dependencies
 RUN pip install -r requirements.txt
 
-# Uncompress LDA Model
-RUN unzip ./models/lda_250k/250k_ldamodel_185_files.zip
+# Uncompress LDA Model Directory
+RUN unzip -d ./models/ ./LDA.zip 
 
 # Copy the uncompressed LDA Model files to the appropriate directory for serving
-RUN mv 250k* ./models/lda_250k/
+RUN pip install -e .
 
 # Install NLTK dependencies
 RUN python ./src/models/init_nltk.py
